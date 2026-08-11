@@ -4,6 +4,7 @@ NotiGrab is a privacy-focused Android application built with Kotlin and Jetpack 
 Instead of allowing selected app notifications to remain visible in the Android notification panel, NotiGrab uses Android's NotificationListenerService to intercept notifications, store them locally, and remove them from the system notification shade. Users can then access their notification history directly inside NotiGrab.
 
 Current Features
+
 🔔 Notification interception using NotificationListenerService
 
 📱 Currently supports InstaPro2 with plans for multi-app support
