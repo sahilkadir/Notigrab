@@ -27,6 +27,7 @@ Current Features
 ⚡ Real-time UI updates when notifications are saved or deleted
 
 Planned Features
+
 📋 Installed-app manager with search and capture toggles
 
 ⭐ Favorite notifications pinned to the top
