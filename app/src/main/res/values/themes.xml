@@ -1,5 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
-    <style name="Theme.Notigrab" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- =========================================================
+         NORMAL NOTIGRAB THEME
+         ========================================================= -->
+
+    <style
+        name="Theme.Notigrab"
+        parent="@android:style/Theme.Material.NoActionBar">
+
+        <item name="android:windowBackground">#090A0F</item>
+
+        <item name="android:statusBarColor">#090A0F</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">#090A0F</item>
+
+        <item name="android:windowNoTitle">true</item>
+
+        <item name="android:colorAccent">#B9A7FF</item>
+
+    </style>
+
+
+    <!-- =========================================================
+         ANDROID STARTUP SPLASH THEME
+         ========================================================= -->
+
+    <style
+        name="Theme.Notigrab.Starting"
+        parent="Theme.SplashScreen">
+
+        <!-- Background shown immediately at app launch -->
+        <item name="windowSplashScreenBackground">
+            #090A0F
+        </item>
+
+        <!-- Use your existing launcher icon -->
+        <item name="windowSplashScreenAnimatedIcon">
+            @mipmap/ic_launcher
+        </item>
+
+        <!-- Theme applied after splash disappears -->
+        <item name="postSplashScreenTheme">
+            @style/Theme.Notigrab
+        </item>
+
+    </style>
+
 </resources>

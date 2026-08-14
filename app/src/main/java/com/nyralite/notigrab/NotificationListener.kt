@@ -1,24 +1,23 @@
 package com.nyralite.notigrab
 
 import android.app.Notification
+import android.graphics.Bitmap
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import java.io.ByteArrayOutputStream
+import java.util.Locale
 
-class NotificationListener :
-    NotificationListenerService() {
+class NotificationListener : NotificationListenerService() {
 
-    private lateinit var database:
-            NotificationDatabase
+    private lateinit var database: NotificationDatabase
 
     override fun onCreate() {
-
         super.onCreate()
 
-        database =
-            NotificationDatabase(
-                applicationContext
-            )
+        database = NotificationDatabase(
+            applicationContext
+        )
 
         database.deleteExpiredNotifications()
 
@@ -29,7 +28,6 @@ class NotificationListener :
     }
 
     override fun onListenerConnected() {
-
         super.onListenerConnected()
 
         database.deleteExpiredNotifications()
@@ -43,59 +41,76 @@ class NotificationListener :
     override fun onNotificationPosted(
         sbn: StatusBarNotification
     ) {
-
-        if (
-            sbn.packageName !=
-            "com.instapro2.android"
-        ) {
-
-            return
-        }
-
         try {
 
+            val packageName =
+                sbn.packageName
+
+            if (!database.isAppEnabled(packageName)) {
+                return
+            }
+
+            val notification =
+                sbn.notification
+
             val extras =
-                sbn.notification.extras
+                notification.extras
 
             val title =
-                extras.getString(
+                extras.getCharSequence(
                     Notification.EXTRA_TITLE
                 )
-                    ?: "InstaPro2"
+                    ?.toString()
+                    ?.trim()
+                    .orEmpty()
 
             val message =
                 extras.getCharSequence(
                     Notification.EXTRA_TEXT
                 )
                     ?.toString()
-                    ?: ""
+                    ?.trim()
+                    .orEmpty()
 
-            Log.d(
-                "NOTIGRAB",
-                "InstaPro2 notification received"
-            )
+            val subText =
+                extras.getCharSequence(
+                    Notification.EXTRA_SUB_TEXT
+                )
+                    ?.toString()
+                    ?.trim()
+                    .orEmpty()
 
-            Log.d(
-                "NOTIGRAB",
-                "Title: $title"
-            )
+            val accountName =
+                extractAccountName(
+                    title = title,
+                    subText = subText,
+                    packageName = packageName
+                )
 
-            Log.d(
-                "NOTIGRAB",
-                "Message: $message"
-            )
+            if (accountName.isBlank()) {
+                return
+            }
+
+            val accountId =
+                accountName
+                    .trim()
+                    .lowercase(
+                        Locale.getDefault()
+                    )
+
+            val avatar =
+                extractAvatar(
+                    notification
+                )
 
             val databaseId =
                 database.insertNotification(
-
-                    title =
-                        title,
-
-                    message =
-                        message,
-
-                    time =
-                        System.currentTimeMillis()
+                    appPackage = packageName,
+                    accountId = accountId,
+                    accountName = accountName,
+                    message = message,
+                    time = System.currentTimeMillis(),
+                    avatar = avatar
                 )
 
             if (databaseId != -1L) {
@@ -106,7 +121,27 @@ class NotificationListener :
 
                 Log.d(
                     "NOTIGRAB",
-                    "Notification saved and removed"
+                    "Notification captured"
+                )
+
+                Log.d(
+                    "NOTIGRAB",
+                    "Package: $packageName"
+                )
+
+                Log.d(
+                    "NOTIGRAB",
+                    "Account: $accountName"
+                )
+
+                Log.d(
+                    "NOTIGRAB",
+                    "Message: $message"
+                )
+
+                Log.d(
+                    "NOTIGRAB",
+                    "Avatar available: ${avatar != null}"
                 )
             }
 
@@ -117,6 +152,132 @@ class NotificationListener :
                 "Error processing notification",
                 e
             )
+        }
+    }
+
+    private fun extractAccountName(
+        title: String,
+        subText: String,
+        packageName: String
+    ): String {
+
+        if (
+            title.isNotBlank() &&
+            !looksLikeApplicationName(
+                title,
+                packageName
+            )
+        ) {
+            return title
+        }
+
+        if (subText.isNotBlank()) {
+            return subText
+        }
+
+        if (title.isNotBlank()) {
+            return title
+        }
+
+        return packageName
+    }
+
+    private fun looksLikeApplicationName(
+        title: String,
+        packageName: String
+    ): Boolean {
+
+        return try {
+
+            val applicationInfo =
+                packageManager.getApplicationInfo(
+                    packageName,
+                    0
+                )
+
+            val applicationName =
+                packageManager
+                    .getApplicationLabel(
+                        applicationInfo
+                    )
+                    .toString()
+
+            title.equals(
+                applicationName,
+                ignoreCase = true
+            )
+
+        } catch (e: Exception) {
+
+            false
+        }
+    }
+
+    private fun extractAvatar(
+        notification: Notification
+    ): ByteArray? {
+
+        return try {
+
+            val extras =
+                notification.extras
+
+            val bitmap: Bitmap? =
+                try {
+
+                    @Suppress("DEPRECATION")
+                    extras.getParcelable(
+                        Notification.EXTRA_LARGE_ICON
+                    ) as? Bitmap
+
+                } catch (e: Exception) {
+
+                    null
+                }
+
+            if (bitmap != null) {
+
+                bitmapToByteArray(
+                    bitmap
+                )
+
+            } else {
+
+                null
+            }
+
+        } catch (e: Exception) {
+
+            Log.d(
+                "NOTIGRAB",
+                "Avatar extraction failed",
+                e
+            )
+
+            null
+        }
+    }
+
+    private fun bitmapToByteArray(
+        bitmap: Bitmap
+    ): ByteArray? {
+
+        return try {
+
+            val output =
+                ByteArrayOutputStream()
+
+            bitmap.compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                output
+            )
+
+            output.toByteArray()
+
+        } catch (e: Exception) {
+
+            null
         }
     }
 
