@@ -52,22 +52,6 @@ Current Features
 
 
 
-screenshots
-
-
-
-!\[NotiGrab Inbox](screenshots/inbox1.jpeg)
-
-
-
-!\[NotiGrab Saved](screenshots/saved1.png)
-
-
-
-!\[NotiGrab Search](screenshots/search1.jpeg)
-
-
-
 What We Upgraded in v2.0.0
 
 📱 Added installed-app manager with searchable app list
