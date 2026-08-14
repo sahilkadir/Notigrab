@@ -52,7 +52,7 @@ Current Features
 
 
 
-Screenshots
+screenshots
 
 
 
